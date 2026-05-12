@@ -12,7 +12,7 @@ pipeline {
             steps {
                 sh '''
                     docker rm -f myapp_test || true
-                    docker run -d --name myapp_test -p 8080:8080 myapp:latest
+                    docker run -d --name myapp_test -p 8081:80 myapp:latest
                     sleep 5
                     docker ps | grep myapp_test
                 '''
