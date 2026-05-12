@@ -1,0 +1,46 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "myapp:latest"
+        CONTAINER_NAME = "myapp_test"
+    }
+
+    stages {
+
+        stage('Build') {
+            steps {
+                echo "Building Docker image..."
+                sh """
+                    docker build -t ${IMAGE_NAME} .
+                """
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo "Running container to verify startup..."
+
+                sh """
+                    docker rm -f ${CONTAINER_NAME} || true
+                    docker run -d --name ${CONTAINER_NAME} -p 8080:8080 ${IMAGE_NAME}
+                """
+
+                // Basic health/startup check
+                sh """
+                    sleep 5
+                    docker ps | grep ${CONTAINER_NAME}
+                """
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Cleaning up test container..."
+            sh """
+                docker rm -f ${CONTAINER_NAME} || true
+            """
+        }
+    }
+}
